@@ -1,0 +1,61 @@
+---
+- name: "LSD | Download Latest Version JSON"
+  ansible.builtin.uri:
+    url: https://api.github.com/repos/lsd-rs/lsd/releases/latest
+  register: lsd_latest_version_json
+  changed_when: false
+
+- name: "LSD | Registering LSD Latest Release"
+  ansible.builtin.set_fact:
+    lsd_latest_release: "{{ lsd_latest_version_json.json.tag_name }}"
+
+- name: "LSD | Registering LSD Latest Version"
+  ansible.builtin.set_fact:
+    lsd_latest_version: "{{ lsd_latest_release.stdout | default('') }}"
+
+- name: "LSD | Getting version information"
+  ansible.builtin.command:
+    cmd: lsd --version
+  register: current_lsd_version
+  changed_when: false
+  failed_when: false
+
+- name: "LSD | Edit current_lsd_version"
+  ansible.builtin.set_fact:
+    current_lsd_version: "{{ current_lsd_version.stdout.split(' ')[-1] | default('') }}"
+
+- name: "LSD | Show current_lsd_version debug"
+  ansible.builtin.debug:
+    var: current_lsd_version
+
+- name: "LSD | Show lsd_latest_release debug"
+  ansible.builtin.debug:
+    var: lsd_latest_release
+
+- name: LSD | Installation Proccess
+  become: true
+  block:
+    - name: LSD | Install
+      when: current_lsd_version == ""
+      community.general.pacman:
+        name: lsd
+        state: present
+
+    # - name: "LSD | Getting version information after install"
+    #   when: current_lsd_version == ""
+    #   ansible.builtin.command:
+    #     cmd: lsd --version
+    #   register: current_lsd_version
+    #   changed_when: false
+    #   failed_when: false
+
+    - name: "LSD | Edit current_lsd_version after install"
+      when: current_lsd_version == ""
+      ansible.builtin.set_fact:
+        current_lsd_version: "{{ current_lsd_version.stdout.split(' ')[-1] | default('') }}"
+
+    - name: LSD | Update version
+      when: lsd_latest_release | regex_replace('^.', '') not in current_lsd_version
+      community.general.pacman:
+        name: lsd
+        state: latest

@@ -1,0 +1,6 @@
+---
+- name: "Ripgrep | {{ ansible_distribution }} | Install ripgrep"
+  community.general.pacman:
+    name: ripgrep
+    state: present
+  become: true

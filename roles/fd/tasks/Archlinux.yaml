@@ -1,0 +1,6 @@
+---
+- name: "Fd | {{ ansible_distribution }} | Install fd"
+  community.general.pacman:
+    name: fd
+    state: present
+  become: true

@@ -1,0 +1,6 @@
+---
+- name: "Fzf | {{ ansible_distribution }} | Install fzf"
+  community.general.pacman:
+    name: fzf
+    state: present
+  become: true

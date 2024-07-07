@@ -1,0 +1,11 @@
+---
+- name: "Ripgrep | Checking for Distribution Config: {{ ansible_distribution }}"
+  ansible.builtin.stat:
+    path: "{{ role_path }}/tasks/{{ ansible_distribution }}.yaml"
+  register: ripgrep_distribution_config
+
+
+- name: "Ripgrep | Run Install Tasks: {{ ansible_distribution }}"
+  ansible.builtin.include_tasks: "{{ ansible_distribution }}.yaml"
+  when: ripgrep_distribution_config.stat.exists
+
