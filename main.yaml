@@ -1,5 +1,6 @@
+---
 - name: DotFiles Config
-  hosts: local
+  hosts: localhost
   connection: local
 
   tasks:

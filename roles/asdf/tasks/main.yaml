@@ -1,0 +1,45 @@
+---
+# Installing dependencies
+- name: "ASDF | Installing dependencies"
+  block:
+    - name: " LSD | Dependecie: git"
+      community.general.pacman:
+        name: git
+        state: present
+    - name: " LSD | Dependecie: curl"
+      community.general.pacman:
+        name: curl
+        state: present
+
+# Downloading asdf core
+# Installing asdf
+- name: "ASDF | See if ~/.asdf/ folder exist"
+  ansible.builtin.stat:
+    path: "{{ ansible_user_dir }}/.asdf/"
+  register: asdf_folder_exist
+
+- name: "ASDF | Downloading asdf core from git"
+  ansible.builtin.git:
+    version: v0.14.0
+    repo: "https://github.com/asdf-vm/asdf.git"
+    dest: "{{ ansible_user_dir }}/.asdf"
+
+
+#TODO; split into file, check current global, skip if is the same, install multiple versions at once
+- name: "ASDF | Installing plugin for each tool Debug"
+  ansible.builtin.debug:
+    msg: "{{ asdf_plugins }}"
+
+- name: "ASDF | Installing plugin for each tool"
+  ansible.builtin.shell: "asdf plugin add {{ item.plugin }}"
+  loop: "{{ asdf_plugins }}"
+
+# Installing a /runtime
+- name: "ASDF | Installing version of the tool"
+  ansible.builtin.shell: "asdf install {{ item.plugin }} {{ item.version }}"
+  loop: "{{ asdf_plugins }}"
+
+# Setting global and project versions via .tool-versions config files
+- name: "ASDF | setting global version via .tool-versions ({{ item.plugin }} {{ item.global | default('system') }})"
+  ansible.builtin.shell: "asdf global {{ item.plugin }} {{ item.global | default('system') }}"
+  loop: "{{ asdf_plugins }}"
