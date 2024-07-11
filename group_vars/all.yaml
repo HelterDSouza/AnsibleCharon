@@ -1,19 +1,18 @@
 ---
 default_roles:
-  # - system
+  - system
   # - zsh
-  # - git
-  # - ssh
+  - git
+  - ssh
   - asdf
-
-  # - lsd
-  # - tmux
-  # - bat
-  # - fastfetch
-  # - fzf
-  # - zoxide
-  # - fd
-  # - ripgrep
+  - lsd
+  - tmux
+  - bat
+  - fastfetch
+  - fzf
+  - zoxide
+  - fd
+  - ripgrep
 
   # - sddm
   # - yazi

@@ -1,45 +1,24 @@
 ---
-# Installing dependencies
-- name: "ASDF | Installing dependencies"
-  block:
-    - name: " LSD | Dependecie: git"
-      community.general.pacman:
-        name: git
-        state: present
-    - name: " LSD | Dependecie: curl"
-      community.general.pacman:
-        name: curl
-        state: present
-
-# Downloading asdf core
-# Installing asdf
-- name: "ASDF | See if ~/.asdf/ folder exist"
-  ansible.builtin.stat:
-    path: "{{ ansible_user_dir }}/.asdf/"
-  register: asdf_folder_exist
-
-- name: "ASDF | Downloading asdf core from git"
+- name: Asdf-vm/asdf is cloned
   ansible.builtin.git:
-    version: v0.14.0
-    repo: "https://github.com/asdf-vm/asdf.git"
-    dest: "{{ ansible_user_dir }}/.asdf"
+    repo: https://github.com/asdf-vm/asdf
+    dest: "{{ asdf_install_dir }}"
+    version: "{{ asdf_version }}"
 
+- name: All plugins are installed
+  args:
+    executable: "{{ asdf_default_shell }}"
+    creates: "{{ asdf_install_dir }}/plugins/{{ item.name }}"
+  loop: "{{ asdf_versions }}"
+  ansible.builtin.shell: >-
+    source {{ asdf_install_dir }}/{{ asdf_init_script }} &&
+    asdf plugin add {{ item.name }} {{ item.repo | default("") }}
 
-#TODO; split into file, check current global, skip if is the same, install multiple versions at once
-- name: "ASDF | Installing plugin for each tool Debug"
-  ansible.builtin.debug:
-    msg: "{{ asdf_plugins }}"
-
-- name: "ASDF | Installing plugin for each tool"
-  ansible.builtin.shell: "asdf plugin add {{ item.plugin }}"
-  loop: "{{ asdf_plugins }}"
-
-# Installing a /runtime
-- name: "ASDF | Installing version of the tool"
-  ansible.builtin.shell: "asdf install {{ item.plugin }} {{ item.version }}"
-  loop: "{{ asdf_plugins }}"
-
-# Setting global and project versions via .tool-versions config files
-- name: "ASDF | setting global version via .tool-versions ({{ item.plugin }} {{ item.global | default('system') }})"
-  ansible.builtin.shell: "asdf global {{ item.plugin }} {{ item.global | default('system') }}"
-  loop: "{{ asdf_plugins }}"
+- name: All versions are installed
+  args:
+    executable: "{{ asdf_default_shell }}"
+    creates: "{{ asdf_install_dir }}/installs/{{ item.0.name }}/{{ item.1 }}"
+  loop: "{{ asdf_versions | subelements('versions', skip_missing=True) }}"
+  ansible.builtin.shell: >-
+    source {{ asdf_install_dir }}/{{ asdf_init_script }} &&
+    asdf install {{ item.0.name }} {{ item.1 }}

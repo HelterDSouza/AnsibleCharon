@@ -1,5 +1,0 @@
----
-asdf_plugins:
-  - { plugin: python, version: 3.12.3, global: 3.12.3 }
-  - { plugin: nodejs, version: latest }
-  - { plugin: rust, version: stable, global: stable }
